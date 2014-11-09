@@ -6,5 +6,5 @@ import java.util.concurrent.Future;
 
 public interface TransferRepository {
 
-	Future<Transfer> getTransfer(String networkType, String userId);
+	com.datastax.driver.core.ResultSetFuture getTransfer(String networkType, String userId);
 }

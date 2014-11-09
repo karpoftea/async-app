@@ -5,6 +5,11 @@ public class Transfer {
 	private String trnsId;
 	private String value;
 
+	public Transfer(String trnsId, String value) {
+		this.trnsId = trnsId;
+		this.value = value;
+	}
+
 	public String getTrnsId() {
 		return trnsId;
 	}

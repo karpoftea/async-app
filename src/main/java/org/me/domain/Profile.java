@@ -9,6 +9,12 @@ public class Profile {
 	private String networkType;
 	private List<Profile> contacts;
 
+	public Profile(String name, String userId, String networkType) {
+		this.name = name;
+		this.userId = userId;
+		this.networkType = networkType;
+	}
+
 	public String getName() {
 		return name;
 	}
