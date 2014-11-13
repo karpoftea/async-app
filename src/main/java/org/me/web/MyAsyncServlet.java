@@ -62,13 +62,19 @@ public class MyAsyncServlet extends HttpServlet {
 							if (!row.isNull("name")) {
 								profile = new Profile(row.getString("name"), row.getString("user_id"), row.getString("network_type"));
 							} else {
-								transfer = new Transfer(row.getString("trnsId"), row.getString("value"));
+								transfer = new Transfer(
+										row.getString("trnsId"),
+										row.getString("value"),
+										row.getString("user_id"),
+										row.getString("network_type"),
+										row.getLong("amount")
+								);
 							}
 						}
 
 						writer.write(String.format("%s-%s", profile, transfer));
 					} catch (IOException e) {
-						e.printStackTrace();
+						throw new RuntimeException(e);
 					} finally {
 						asyncContext.complete();
 					}
