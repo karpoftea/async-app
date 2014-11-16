@@ -3,9 +3,6 @@ package org.me.web;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
 import org.me.domain.Profile;
 import org.me.domain.Transfer;
 import org.me.repository.Repository;
@@ -18,12 +15,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
-@WebServlet(urlPatterns={"/asyncservlet"}, asyncSupported=true)
+@WebServlet(urlPatterns = {"/asyncservlet"}, asyncSupported = true)
 public class MyAsyncServlet extends HttpServlet {
 
 	Repository repo = new Repository();
+
+	Executor exec = Executors.newCachedThreadPool();
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
@@ -31,77 +31,54 @@ public class MyAsyncServlet extends HttpServlet {
 
 		final AsyncContext asyncContext = req.startAsync();
 
-		String userId = "2";
-		String networkType = "vk";
+		exec.execute(() -> {
+			String userId = "2";
+			String networkType = "vk";
 
-		try {
 			final ResultSetFuture profileFuture = repo.getProfile(networkType, userId);
 			final ResultSetFuture transferFuture = repo.getTransfer(networkType, userId);
 
-			ListenableFuture<List<ResultSet>> future = Futures.allAsList(profileFuture, transferFuture);
-
-			Futures.addCallback(future, new FutureCallback<List<ResultSet>>() {
-				@Override
-				public void onSuccess(List<ResultSet> result) {
-					try {
-						PrintWriter writer = asyncContext.getResponse().getWriter();
-						if (result.size() != 2) {
-							writer.write("Wrong results");
-							return;
-						}
-
-						Profile profile = null;
-						Transfer transfer = null;
-						for (ResultSet resultSet : result) {
-							Row row = resultSet.one();
-							if (row == null) {
-								writer.write("Missing results");
-								return;
-							}
-
-							if (!row.isNull("name")) {
-								profile = new Profile(row.getString("name"), row.getString("user_id"), row.getString("network_type"));
-							} else {
-								transfer = new Transfer(
-										row.getString("trnsId"),
-										row.getString("value"),
-										row.getString("user_id"),
-										row.getString("network_type"),
-										row.getString("amount")
-								);
-							}
-						}
-
-						writer.write(String.format("%s-%s", profile, transfer));
-					} catch (IOException e) {
-						throw new RuntimeException(e);
-					} finally {
-						asyncContext.complete();
-					}
-				}
-
-				@Override
-				public void onFailure(Throwable t) {
-					try {
-						asyncContext.getResponse().getWriter().write("Wrong");
-					} catch (IOException e) {
-						e.printStackTrace();
-					} finally {
-						asyncContext.complete();
-					}
-				}
-			});
-		} catch (Exception e) {
-			e.printStackTrace();
 			try {
-				asyncContext.getResponse().getWriter().write("Error");
-			} catch (IOException e1) {
-				e1.printStackTrace();
+				Profile profile = toProfile(profileFuture);
+				Transfer transfer = toTransfer(transferFuture);
+
+				PrintWriter writer = asyncContext.getResponse().getWriter();
+				writer.write(String.format("%s-%s", profile, transfer));
+			} catch (Exception e) {
+				try (PrintWriter writer = asyncContext.getResponse().getWriter()) {
+					writer.write("Error:" + e.getMessage());
+				} catch (IOException io) {
+					//ignore
+				}
+			} finally {
+				asyncContext.complete();
 			}
+		});
+	}
 
-			asyncContext.complete();
-		}
+	private Transfer toTransfer(ResultSetFuture transferFuture) throws InterruptedException, java.util.concurrent.ExecutionException {
+		ResultSet transferResult = transferFuture.get();
+		Row row = transferResult.one();
+		return row == null ?
+				null :
+				new Transfer(
+						row.getString("trns_id"),
+						row.getString("value"),
+						row.getString("user_id"),
+						row.getString("network_type"),
+						row.getString("amount")
+				);
+	}
 
-
+	private Profile toProfile(ResultSetFuture profileFuture) throws InterruptedException, java.util.concurrent.ExecutionException {
+		ResultSet profileResult = profileFuture.get();
+		Row row = profileResult.one();
+		return row == null ?
+				null :
+				new Profile(
+						row.getString("name"),
+						row.getString("user_id"),
+						row.getString("network_type")
+				);
 	}
 }
