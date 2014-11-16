@@ -31,7 +31,7 @@ public class MyAsyncServlet extends HttpServlet {
 
 		final AsyncContext asyncContext = req.startAsync();
 
-		String userId = "100500";
+		String userId = "2";
 		String networkType = "vk";
 
 		try {
@@ -67,7 +67,7 @@ public class MyAsyncServlet extends HttpServlet {
 										row.getString("value"),
 										row.getString("user_id"),
 										row.getString("network_type"),
-										row.getLong("amount")
+										row.getString("amount")
 								);
 							}
 						}

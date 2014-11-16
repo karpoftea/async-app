@@ -27,8 +27,8 @@ public class Repository implements TransferRepository, UserProfileRepository {
 	public ResultSetFuture getTransfer(String networkType, String userId) {
 		Select.Where query = QueryBuilder.select().all()
 				.from("transfer")
-				.where(eq("userId", userId))
-				.and(eq("networkType", networkType));
+				.where(eq("user_id", userId))
+				.and(eq("network_type", networkType));
 
 		return session.executeAsync(query);
 	}

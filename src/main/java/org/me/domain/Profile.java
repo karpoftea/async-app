@@ -46,4 +46,15 @@ public class Profile {
 	public void setContacts(List<Profile> contacts) {
 		this.contacts = contacts;
 	}
+
+
+	@Override
+	public String toString() {
+		return "Profile{" +
+				"name='" + name + '\'' +
+				", userId='" + userId + '\'' +
+				", networkType='" + networkType + '\'' +
+				", contacts=" + contacts +
+				'}';
+	}
 }

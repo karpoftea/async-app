@@ -6,9 +6,9 @@ public class Transfer {
 	private String value;
 	private String userId;
 	private String networkType;
-	private Long amount;
+	private String amount;
 
-	public Transfer(String trnsId, String value, String userId, String networkType, Long amount) {
+	public Transfer(String trnsId, String value, String userId, String networkType, String amount) {
 		this.trnsId = trnsId;
 		this.value = value;
 		this.userId = userId;
@@ -16,11 +16,11 @@ public class Transfer {
 		this.amount = amount;
 	}
 
-	public Long getAmount() {
+	public String getAmount() {
 		return amount;
 	}
 
-	public void setAmount(Long amount) {
+	public void setAmount(String amount) {
 		this.amount = amount;
 	}
 
@@ -54,5 +54,16 @@ public class Transfer {
 
 	public void setValue(String value) {
 		this.value = value;
+	}
+
+	@Override
+	public String toString() {
+		return "Transfer{" +
+				"trnsId='" + trnsId + '\'' +
+				", value='" + value + '\'' +
+				", userId='" + userId + '\'' +
+				", networkType='" + networkType + '\'' +
+				", amount='" + amount + '\'' +
+				'}';
 	}
 }

@@ -1,0 +1,17 @@
+CREATE KEYSPACE my_social WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'}  AND durable_writes = true;
+
+CREATE TABLE my_social.profile (
+    user_id text,
+    network_type text,
+    name text,
+    PRIMARY KEY (user_id, network_type)
+);
+
+CREATE TABLE my_social.transfer (
+    user_id text,
+    network_type text,
+    amount text,
+    trns_id text,
+    value text,
+    PRIMARY KEY (user_id, network_type)
+);
