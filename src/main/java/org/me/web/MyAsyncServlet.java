@@ -25,7 +25,11 @@ public class MyAsyncServlet extends HttpServlet {
 
 	Executor exec = Executors.newCachedThreadPool();
 
-	@Override
+	@Override//try CompleteableFuture:
+	//http://www.nurkiewicz.com/2013/05/java-8-definitive-guide-to.html
+	//http://www.nurkiewicz.com/2013/05/java-8-completablefuture-in-action.html
+	//http://www.ibm.com/developerworks/library/j-jvmc3/index.html
+	//source: http://stackoverflow.com/questions/826212/java-executors-how-to-be-notified-without-blocking-when-a-task-completes
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
