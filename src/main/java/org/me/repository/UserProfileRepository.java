@@ -6,5 +6,5 @@ import java.util.concurrent.Future;
 
 public interface UserProfileRepository {
 
-	com.datastax.driver.core.ResultSetFuture getProfile(String networkType, String userId);
+	com.datastax.driver.core.ResultSetFuture getProfileAsync(String networkType, String userId);
 }

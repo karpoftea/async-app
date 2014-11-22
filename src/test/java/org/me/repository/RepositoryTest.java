@@ -15,7 +15,7 @@ public class RepositoryTest {
 
 	@Test
 	public void testGetProfile() throws ExecutionException, InterruptedException {
-		ResultSetFuture future = r.getProfile("vk", "1");
+		ResultSetFuture future = r.getProfileAsync("vk", "1");
 		ResultSet rows = future.get();
 		Row result = rows.one();
 		assertNotNull(result);
@@ -27,7 +27,7 @@ public class RepositoryTest {
 
 	@Test
 	public void testGetTransfer() throws ExecutionException, InterruptedException {
-		ResultSetFuture future = r.getTransfer("vk", "2");
+		ResultSetFuture future = r.getTransferAsync("vk", "2");
 		ResultSet rows = future.get();
 		Row result = rows.one();
 		assertNotNull(result);

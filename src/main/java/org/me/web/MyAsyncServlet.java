@@ -30,6 +30,10 @@ public class MyAsyncServlet extends HttpServlet {
 	//http://www.nurkiewicz.com/2013/05/java-8-completablefuture-in-action.html
 	//http://www.ibm.com/developerworks/library/j-jvmc3/index.html
 	//source: http://stackoverflow.com/questions/826212/java-executors-how-to-be-notified-without-blocking-when-a-task-completes
+
+	//IO vs NIO vs NIO2
+	//http://samolisov.blogspot.ru/2013/11/java.html
+	//http://www.javaworld.com/article/2078654/java-se/five-ways-to-maximize-java-nio-and-nio-2.html
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
@@ -39,12 +43,12 @@ public class MyAsyncServlet extends HttpServlet {
 			String userId = "2";
 			String networkType = "vk";
 
-			final ResultSetFuture profileFuture = repo.getProfile(networkType, userId);
-			final ResultSetFuture transferFuture = repo.getTransfer(networkType, userId);
+			final ResultSetFuture profileFuture = repo.getProfileAsync(networkType, userId);
+			final ResultSetFuture transferFuture = repo.getTransferAsync(networkType, userId);
 
 			try {
-				Profile profile = toProfile(profileFuture);
-				Transfer transfer = toTransfer(transferFuture);
+				Profile profile = repo.toProfile(profileFuture);
+				Transfer transfer = repo.toTransfer(transferFuture);
 
 				PrintWriter writer = asyncContext.getResponse().getWriter();
 				writer.write(String.format("%s-%s", profile, transfer));
@@ -58,31 +62,5 @@ public class MyAsyncServlet extends HttpServlet {
 				asyncContext.complete();
 			}
 		});
-	}
-
-	private Transfer toTransfer(ResultSetFuture transferFuture) throws InterruptedException, java.util.concurrent.ExecutionException {
-		ResultSet transferResult = transferFuture.get();
-		Row row = transferResult.one();
-		return row == null ?
-				null :
-				new Transfer(
-						row.getString("trns_id"),
-						row.getString("value"),
-						row.getString("user_id"),
-						row.getString("network_type"),
-						row.getString("amount")
-				);
-	}
-
-	private Profile toProfile(ResultSetFuture profileFuture) throws InterruptedException, java.util.concurrent.ExecutionException {
-		ResultSet profileResult = profileFuture.get();
-		Row row = profileResult.one();
-		return row == null ?
-				null :
-				new Profile(
-						row.getString("name"),
-						row.getString("user_id"),
-						row.getString("network_type")
-				);
 	}
 }
