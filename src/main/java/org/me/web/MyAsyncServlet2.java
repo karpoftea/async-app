@@ -1,8 +1,5 @@
 package org.me.web;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.ResultSetFuture;
-import com.datastax.driver.core.Row;
 import org.me.domain.Profile;
 import org.me.domain.Transfer;
 import org.me.repository.Repository;
@@ -17,9 +14,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.function.Function;
 
 @WebServlet(urlPatterns = {"/asyncservlet2"}, asyncSupported = true)
 public class MyAsyncServlet2 extends HttpServlet {
@@ -35,8 +29,22 @@ public class MyAsyncServlet2 extends HttpServlet {
 		final String networkType = "vk";
 		final String userId = "2";
 
-		CompletableFuture<Profile> profile = CompletableFuture.supplyAsync(() ->
-						repo.getProfileAsync(networkType, userId)
+		CompletableFuture<Transfer> transferFuture = CompletableFuture.supplyAsync(
+				() -> repo.getTransferAsync(networkType, userId)
+		).thenApply(
+				resultSet -> {
+					try {
+						return repo.toTransfer(resultSet);
+					} catch (InterruptedException e) {
+						throw new RuntimeException(e);
+					} catch (ExecutionException e) {
+						throw new RuntimeException(e);
+					}
+				}
+		);
+
+		CompletableFuture<Profile> profileFuture = CompletableFuture.supplyAsync(
+				() -> repo.getProfileAsync(networkType, userId)
 		).thenApply(resultSetFuture -> {
 			try {
 				return repo.toProfile(resultSetFuture);
@@ -46,7 +54,36 @@ public class MyAsyncServlet2 extends HttpServlet {
 				throw new RuntimeException(e);
 			}
 		});
+
+		transferFuture
+				.thenCombine(
+						profileFuture,
+						(transfer, profile) -> String.format("%s-%s", profile, transfer)
+				)
+				.thenAccept(
+						result -> {
+							try {
+								PrintWriter writer = asyncContext.getResponse().getWriter();
+								writer.write(result);
+							} catch (IOException e) {
+								e.printStackTrace();
+							} finally {
+								asyncContext.complete();
+							}
+						}
+				)
+				.exceptionally(
+						throwable -> {
+							try {
+								PrintWriter writer = asyncContext.getResponse().getWriter();
+								writer.write("Error has occurred:" + throwable.getMessage());
+							} catch (IOException e) {
+								e.printStackTrace();
+							} finally {
+								asyncContext.complete();
+							}
+							return null;
+						}
+				);
 	}
-
-
 }

@@ -1,8 +1,6 @@
 package org.me.web;
 
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
-import com.datastax.driver.core.Row;
 import org.me.domain.Profile;
 import org.me.domain.Transfer;
 import org.me.repository.Repository;

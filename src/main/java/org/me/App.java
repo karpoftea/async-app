@@ -3,6 +3,7 @@ package org.me;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.me.web.MyAsyncServlet;
+import org.me.web.MyAsyncServlet2;
 
 public class App {
 
@@ -12,6 +13,7 @@ public class App {
 		server = new Server(8080);
 		ServletHandler servletHandler = new ServletHandler();
 		servletHandler.addServletWithMapping(MyAsyncServlet.class, "/asyncservlet");
+		servletHandler.addServletWithMapping(MyAsyncServlet2.class, "/asyncservlet2");
 		server.setHandler(servletHandler);
 
 		server.start();
